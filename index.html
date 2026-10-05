@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ApexTrade Journal - Professional Trading Journal</title>
+    <title>ApexTrade Pro - Ultimate Trading Journal</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -15,6 +15,9 @@
                         darkBg: '#0b0f19',
                         cardBg: '#131b2e',
                         borderCol: '#1e293b',
+                        lightBg: '#f8fafc',
+                        lightCard: '#ffffff',
+                        lightBorder: '#e2e8f0',
                         neonGreen: '#10b981',
                         neonRed: '#ef4444',
                         accentBlue: '#3b82f6',
@@ -33,8 +36,10 @@
     <style>
         body { font-family: 'Inter', sans-serif; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #0b0f19; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .dark ::-webkit-scrollbar-track { background: #0b0f19; }
+        .dark ::-webkit-scrollbar-thumb { background: #1e293b; }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn {
@@ -43,100 +48,145 @@
         }
     </style>
 </head>
-<body class="bg-darkBg text-gray-100 min-h-screen flex flex-col antialiased selection:bg-accentBlue selection:text-white">
+<body class="bg-lightBg dark:bg-darkBg text-gray-800 dark:text-gray-100 min-h-screen flex flex-col antialiased transition-colors duration-200 selection:bg-accentBlue selection:text-white">
 
-    <header class="bg-cardBg/80 backdrop-blur-md border-b border-borderCol sticky top-0 z-50">
+    <!-- Header Navigation Bar -->
+    <header class="bg-lightCard/90 dark:bg-cardBg/90 backdrop-blur-md border-b border-lightBorder dark:border-borderCol sticky top-0 z-50 transition-colors duration-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <div class="bg-gradient-to-tr from-accentBlue to-accentPurple text-white p-2.5 rounded-xl shadow-lg shadow-accentBlue/20">
                     <i class="fa-solid fa-chart-candlestick text-lg"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg text-white tracking-wide">ApexTrade <span class="text-accentBlue text-xs uppercase px-2 py-0.5 bg-accentBlue/10 border border-accentBlue/20 rounded-full ml-1">Pro Journal</span></h1>
+                    <h1 class="font-bold text-base sm:text-lg tracking-wide flex items-center">
+                        ApexTrade <span class="text-accentBlue text-xs uppercase px-2 py-0.5 bg-accentBlue/10 border border-accentBlue/20 rounded-full ml-2">Pro</span>
+                    </h1>
                 </div>
             </div>
-            <!-- Navigation Tabs -->
-            <nav class="hidden md:flex space-x-1 bg-darkBg p-1 rounded-xl border border-borderCol">
-                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-accentBlue text-white shadow-sm">Dashboard</button>
-                <button onclick="switchTab('journal')" id="nav-journal" class="px-4 py-2 rounded-lg text-xs font-semibold transition-all text-gray-400 hover:text-white">Trade Log</button>
-                <button onclick="switchTab('playbook')" id="nav-playbook" class="px-4 py-2 rounded-lg text-xs font-semibold transition-all text-gray-400 hover:text-white">Analytics & Strategies</button>
-            </nav>
-            <!-- Header Actions -->
+
+            <!-- Portfolio Switcher & Tabs -->
+            <div class="hidden lg:flex items-center space-x-4">
+                <!-- Portfolio Selector Dropdown -->
+                <div class="flex items-center space-x-2 bg-lightBorder/50 dark:bg-darkBg px-3 py-1.5 rounded-xl border border-lightBorder dark:border-borderCol">
+                    <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Portfolio:</span>
+                    <select id="portfolioSelector" onchange="switchPortfolio(this.value)" class="bg-transparent text-xs font-semibold text-gray-800 dark:text-white focus:outline-none cursor-pointer">
+                        <!-- Populated dynamically -->
+                    </select>
+                    <button onclick="openNewPortfolioModal()" class="text-accentBlue hover:text-accentBlue/80 text-xs ml-1" title="Create New Portfolio"><i class="fa-solid fa-plus-circle"></i></button>
+                </div>
+
+                <!-- Desktop Tabs -->
+                <nav class="flex space-x-1 bg-lightBorder/50 dark:bg-darkBg p-1 rounded-xl border border-lightBorder dark:border-borderCol">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-accentBlue text-white shadow-sm">Dashboard</button>
+                    <button onclick="switchTab('journal')" id="nav-journal" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Trade Log</button>
+                    <button onclick="switchTab('playbook')" id="nav-playbook" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Analytics</button>
+                </nav>
+            </div>
+
+            <!-- Right Header Actions (Theme, Demo, Export/Import) -->
             <div class="flex items-center space-x-2">
-                <button onclick="loadSampleData()" class="hidden sm:flex items-center space-x-1.5 px-3 py-2 bg-borderCol/50 hover:bg-borderCol text-gray-300 rounded-xl text-xs font-medium transition-all" title="Load Sample Trades">
+                <!-- Theme Toggle Button -->
+                <button onclick="toggleTheme()" class="p-2.5 rounded-xl bg-lightBorder/50 dark:bg-borderCol/50 hover:bg-lightBorder dark:hover:bg-borderCol text-gray-600 dark:text-gray-300 transition-all" title="Toggle Theme">
+                    <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
+                </button>
+                <!-- Load Demo Data -->
+                <button onclick="loadSampleData()" class="hidden sm:flex items-center space-x-1.5 px-3 py-2 bg-lightBorder/50 dark:bg-borderCol/50 hover:bg-lightBorder dark:hover:bg-borderCol text-gray-700 dark:text-gray-300 rounded-xl text-xs font-medium transition-all" title="Load Sample Trades">
                     <i class="fa-solid fa-wand-magic-sparkles text-accentPurple"></i>
-                    <span>Load Demo Data</span>
+                    <span>Demo Data</span>
                 </button>
-                <button onclick="exportCSV()" class="flex items-center space-x-1.5 px-3 py-2 bg-borderCol/50 hover:bg-borderCol text-gray-300 rounded-xl text-xs font-medium transition-all" title="Export CSV">
+                <!-- Export CSV -->
+                <button onclick="exportCSV()" class="flex items-center space-x-1.5 px-3 py-2 bg-lightBorder/50 dark:bg-borderCol/50 hover:bg-lightBorder dark:hover:bg-borderCol text-gray-700 dark:text-gray-300 rounded-xl text-xs font-medium transition-all" title="Export CSV">
                     <i class="fa-solid fa-file-csv text-neonGreen"></i>
-                    <span class="hidden sm:inline">Export CSV</span>
+                    <span class="hidden sm:inline">Export</span>
                 </button>
-                <button onclick="clearAllData()" class="p-2 bg-red-500/10 hover:bg-red-500/20 text-neonRed rounded-xl text-xs font-medium transition-all" title="Reset Data">
+                <!-- Reset Data -->
+                <button onclick="clearPortfolioData()" class="p-2.5 bg-red-500/10 hover:bg-red-500/20 text-neonRed rounded-xl text-xs font-medium transition-all" title="Reset Current Portfolio">
                     <i class="fa-solid fa-trash-can text-sm"></i>
                 </button>
             </div>
         </div>
-        <!-- Mobile Nav bar -->
-        <div class="flex md:hidden border-t border-borderCol bg-darkBg px-4 py-2 justify-around">
-            <button onclick="switchTab('dashboard')" id="mobile-nav-dashboard" class="text-xs font-semibold text-accentBlue py-1">Dashboard</button>
-            <button onclick="switchTab('journal')" id="mobile-nav-journal" class="text-xs font-semibold text-gray-400 py-1">Trade Log</button>
-            <button onclick="switchTab('playbook')" id="mobile-nav-playbook" class="text-xs font-semibold text-gray-400 py-1">Analytics</button>
+
+        <!-- Mobile Portfolio & Navigation Bar -->
+        <div class="lg:hidden border-t border-lightBorder dark:border-borderCol bg-lightCard dark:bg-darkBg px-4 py-2 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2 text-xs">
+                    <span class="text-gray-500 dark:text-gray-400 font-medium">Portfolio:</span>
+                    <select id="mobilePortfolioSelector" onchange="switchPortfolio(this.value)" class="bg-lightBorder/50 dark:bg-borderCol px-2 py-1 rounded text-gray-800 dark:text-white font-semibold">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <button onclick="openNewPortfolioModal()" class="text-accentBlue text-xs font-semibold"><i class="fa-solid fa-plus mr-1"></i>New Portfolio</button>
+            </div>
+            <div class="flex justify-around border-t border-lightBorder/50 dark:border-borderCol/50 pt-1">
+                <button onclick="switchTab('dashboard')" id="mobile-nav-dashboard" class="text-xs font-semibold text-accentBlue py-1">Dashboard</button>
+                <button onclick="switchTab('journal')" id="mobile-nav-journal" class="text-xs font-semibold text-gray-600 dark:text-gray-400 py-1">Trade Log</button>
+                <button onclick="switchTab('playbook')" id="mobile-nav-playbook" class="text-xs font-semibold text-gray-600 dark:text-gray-400 py-1">Analytics</button>
+            </div>
         </div>
     </header>
 
+    <!-- Main Content Container -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
         <!-- TAB 1: DASHBOARD -->
         <div id="tab-dashboard" class="tab-content active space-y-6">
-            <!-- Metrics Grid -->
-            <div class="grid grid-cols-2 lg:grid-cols-6 gap-4">
-                <div class="bg-cardBg border border-borderCol p-4 rounded-2xl flex flex-col justify-between shadow-sm">
-                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Total P&L</span>
-                    <div id="metric-pnl" class="text-xl sm:text-2xl font-bold tracking-tight text-white mt-2">$0.00</div>
+            <!-- Summary Metric Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
+                <div class="bg-lightCard dark:bg-cardBg border border-lightBorder dark:border-borderCol p-4 rounded-2xl flex flex-col justify-between shadow-sm">
+                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Net P&L</span>
+                    <div id="metric-pnl" class="text-lg sm:text-xl font-bold tracking-tight text-gray-800 dark:text-white mt-2">$0.00</div>
                 </div>
-                <div class="bg-cardBg border border-borderCol p-4 rounded-2xl flex flex-col justify-between shadow-sm">
-                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Win Rate</span>
-                    <div id="metric-winrate" class="text-xl sm:text-2xl font-bold tracking-tight text-white mt-2">0.0%</div>
+                <div class="bg-lightCard dark:bg-cardBg border border-lightBorder dark:border-borderCol p-4 rounded-2xl flex flex-col justify-between shadow-sm">
+                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Win Rate</span>
+                    <div id="metric-winrate" class="text-lg sm:text-xl font-bold tracking-tight text-gray-800 dark:text-white mt-2">0.0%</div>
                 </div>
-                <div class="bg-cardBg border border-borderCol p-4 rounded-2xl flex flex-col justify-between shadow-sm">
-                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Profit Factor</span>
-                    <div id="metric-pf" class="text-xl sm:text-2xl font-bold tracking-tight text-white mt-2">0.00</div>
+                <div class="bg-lightCard dark:bg-cardBg border border-lightBorder dark:border-borderCol p-4 rounded-2xl flex flex-col justify-between shadow-sm">
+                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Profit Factor</span>
+                    <div id="metric-pf" class="text-lg sm:text-xl font-bold tracking-tight text-gray-800 dark:text-white mt-2">0.00</div>
                 </div>
-                <div class="bg-cardBg border border-borderCol p-4 rounded-2xl flex flex-col justify-between shadow-sm">
-                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Total Trades</span>
-                    <div id="metric-total" class="text-xl sm:text-2xl font-bold tracking-tight text-white mt-2">0</div>
+                <div class="bg-lightCard dark:bg-cardBg border border-lightBorder dark:border-borderCol p-4 rounded-2xl flex flex-col justify-between shadow-sm">
+                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Trades</span>
+                    <div id="metric-total" class="text-lg sm:text-xl font-bold tracking-tight text-gray-800 dark:text-white mt-2">0</div>
                 </div>
-                <div class="bg-cardBg border border-borderCol p-4 rounded-2xl flex flex-col justify-between shadow-sm">
-                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Best Trade</span>
-                    <div id="metric-best" class="text-xl sm:text-2xl font-bold tracking-tight text-neonGreen mt-2">+$0.00</div>
+                <div class="bg-lightCard dark:bg-cardBg border border-lightBorder dark:border-borderCol p-4 rounded-2xl flex flex-col justify-between shadow-sm">
+                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Best Trade</span>
+                    <div id="metric-best" class="text-lg sm:text-xl font-bold tracking-tight text-neonGreen mt-2">+$0.00</div>
                 </div>
-                <div class="bg-cardBg border border-borderCol p-4 rounded-2xl flex flex-col justify-between shadow-sm">
-                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Worst Trade</span>
-                    <div id="metric-worst" class="text-xl sm:text-2xl font-bold tracking-tight text-neonRed mt-2">$0.00</div>
+                <div class="bg-lightCard dark:bg-cardBg border border-lightBorder dark:border-borderCol p-4 rounded-2xl flex flex-col justify-between shadow-sm">
+                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Worst Trade</span>
+                    <div id="metric-worst" class="text-lg sm:text-xl font-bold tracking-tight text-neonRed mt-2">$0.00</div>
+                </div>
+                <div class="bg-lightCard dark:bg-cardBg border border-lightBorder dark:border-borderCol p-4 rounded-2xl flex flex-col justify-between shadow-sm">
+                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Avg Win</span>
+                    <div id="metric-avgwin" class="text-lg sm:text-xl font-bold tracking-tight text-neonGreen mt-2">$0.00</div>
+                </div>
+                <div class="bg-lightCard dark:bg-cardBg border border-lightBorder dark:border-borderCol p-4 rounded-2xl flex flex-col justify-between shadow-sm">
+                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Avg Loss</span>
+                    <div id="metric-avgloss" class="text-lg sm:text-xl font-bold tracking-tight text-neonRed mt-2">$0.00</div>
                 </div>
             </div>
 
             <!-- Charts Section -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Cumulative P&L Curve -->
-                <div class="lg:col-span-2 bg-cardBg border border-borderCol p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+                <!-- Cumulative Equity Curve -->
+                <div class="lg:col-span-2 bg-lightCard dark:bg-cardBg border border-lightBorder dark:border-borderCol p-6 rounded-2xl shadow-sm flex flex-col justify-between">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-sm font-bold text-white flex items-center space-x-2">
+                        <h2 class="text-sm font-bold text-gray-800 dark:text-white flex items-center space-x-2">
                             <i class="fa-solid fa-chart-line text-accentBlue"></i>
                             <span>Cumulative Equity Curve ($)</span>
                         </h2>
-                        <span class="text-xs text-gray-400">Real-time Performance</span>
+                        <span id="activePortfolioLabel" class="text-xs px-2 py-0.5 rounded bg-accentBlue/10 text-accentBlue font-semibold">Main Portfolio</span>
                     </div>
                     <div class="h-72 w-full relative">
                         <canvas id="equityChart"></canvas>
                     </div>
                 </div>
-                <!-- Win vs Loss Distribution -->
-                <div class="bg-cardBg border border-borderCol p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+                <!-- Win vs Loss Donut Chart -->
+                <div class="bg-lightCard dark:bg-cardBg border border-lightBorder dark:border-borderCol p-6 rounded-2xl shadow-sm flex flex-col justify-between">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-sm font-bold text-white flex items-center space-x-2">
+                        <h2 class="text-sm font-bold text-gray-800 dark:text-white flex items-center space-x-2">
                             <i class="fa-solid fa-chart-pie text-accentPurple"></i>
-                            <span>Win/Loss Ratio</span>
+                            <span>Win / Loss Breakdown</span>
                         </h2>
                     </div>
                     <div class="h-64 w-full relative flex items-center justify-center">
@@ -146,52 +196,76 @@
             </div>
         </div>
 
-        <!-- TAB 2: TRADE JOURNAL / LOG -->
+        <!-- TAB 2: TRADE LOG & FORM -->
         <div id="tab-journal" class="tab-content space-y-6">
-            <!-- Add Trade Form Card -->
-            <div class="bg-cardBg border border-borderCol p-6 rounded-2xl shadow-lg">
-                <div class="flex items-center justify-between mb-4 pb-3 border-b border-borderCol">
-                    <h2 class="text-base font-bold text-white flex items-center space-x-2">
+            <!-- Add Detailed Trade Form -->
+            <div class="bg-lightCard dark:bg-cardBg border border-lightBorder dark:border-borderCol p-6 rounded-2xl shadow-lg">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-lightBorder dark:border-borderCol">
+                    <h2 class="text-base font-bold text-gray-800 dark:text-white flex items-center space-x-2">
                         <i class="fa-solid fa-circle-plus text-accentBlue"></i>
-                        <span>Log New Trade Entry</span>
+                        <span>Micro-Detailed Trade Logger</span>
                     </h2>
-                    <span class="text-xs text-gray-400">* All calculations are automatic</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">Net P&L calculated automatically including fees</span>
                 </div>
                 <form id="tradeForm" onsubmit="handleFormSubmit(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                     <div>
-                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Date & Time</label>
-                        <input type="datetime-local" id="tradeDate" required class="w-full px-3 py-2 bg-darkBg border border-borderCol rounded-xl text-sm text-white focus:outline-none focus:border-accentBlue">
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Date & Time</label>
+                        <input type="datetime-local" id="tradeDate" required class="w-full px-3 py-2 bg-lightBg dark:bg-darkBg border border-lightBorder dark:border-borderCol rounded-xl text-sm text-gray-800 dark:text-white focus:outline-none focus:border-accentBlue">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Symbol / Asset</label>
-                        <input type="text" id="tradeSymbol" placeholder="e.g. RELIANCE, NIFTY, BTC" required class="w-full px-3 py-2 bg-darkBg border border-borderCol rounded-xl text-sm text-white uppercase focus:outline-none focus:border-accentBlue">
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Symbol / Asset</label>
+                        <input type="text" id="tradeSymbol" placeholder="e.g. NIFTY, AAPL, BTC" required class="w-full px-3 py-2 bg-lightBg dark:bg-darkBg border border-lightBorder dark:border-borderCol rounded-xl text-sm text-gray-800 dark:text-white uppercase focus:outline-none focus:border-accentBlue">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Trade Type</label>
-                        <select id="tradeType" class="w-full px-3 py-2 bg-darkBg border border-borderCol rounded-xl text-sm text-white focus:outline-none focus:border-accentBlue">
-                            <option value="BUY/LONG">BUY / LONG</option>
-                            <option value="SELL/SHORT">SELL / SHORT</option>
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Asset Class</label>
+                        <select id="tradeAssetClass" class="w-full px-3 py-2 bg-lightBg dark:bg-darkBg border border-lightBorder dark:border-borderCol rounded-xl text-sm text-gray-800 dark:text-white focus:outline-none focus:border-accentBlue">
+                            <option value="Equity">Equity / Stocks</option>
+                            <option value="Options">Options (F&O)</option>
+                            <option value="Futures">Futures</option>
+                            <option value="Crypto">Cryptocurrency</option>
+                            <option value="Forex">Forex</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Strategy Name</label>
-                        <input type="text" id="tradeStrategy" placeholder="e.g. Breakout, Swing, VWAP" required class="w-full px-3 py-2 bg-darkBg border border-borderCol rounded-xl text-sm text-white focus:outline-none focus:border-accentBlue">
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Trade Direction</label>
+                        <select id="tradeType" class="w-full px-3 py-2 bg-lightBg dark:bg-darkBg border border-lightBorder dark:border-borderCol rounded-xl text-sm text-gray-800 dark:text-white focus:outline-none focus:border-accentBlue">
+                            <option value="LONG">LONG (Buy)</option>
+                            <option value="SHORT">SHORT (Sell)</option>
+                        </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Quantity / Shares</label>
-                        <input type="number" step="any" id="tradeQty" placeholder="e.g. 50" required class="w-full px-3 py-2 bg-darkBg border border-borderCol rounded-xl text-sm text-white focus:outline-none focus:border-accentBlue">
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Quantity / Lots</label>
+                        <input type="number" step="any" id="tradeQty" placeholder="e.g. 50" required class="w-full px-3 py-2 bg-lightBg dark:bg-darkBg border border-lightBorder dark:border-borderCol rounded-xl text-sm text-gray-800 dark:text-white focus:outline-none focus:border-accentBlue">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Buy Price ($)</label>
-                        <input type="number" step="any" id="tradeBuyPrice" placeholder="e.g. 1450.50" required class="w-full px-3 py-2 bg-darkBg border border-borderCol rounded-xl text-sm text-white focus:outline-none focus:border-accentBlue">
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Entry Price ($)</label>
+                        <input type="number" step="any" id="tradeBuyPrice" placeholder="e.g. 1450.50" required class="w-full px-3 py-2 bg-lightBg dark:bg-darkBg border border-lightBorder dark:border-borderCol rounded-xl text-sm text-gray-800 dark:text-white focus:outline-none focus:border-accentBlue">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Sell Price ($)</label>
-                        <input type="number" step="any" id="tradeSellPrice" placeholder="e.g. 1520.00" required class="w-full px-3 py-2 bg-darkBg border border-borderCol rounded-xl text-sm text-white focus:outline-none focus:border-accentBlue">
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Exit Price ($)</label>
+                        <input type="number" step="any" id="tradeSellPrice" placeholder="e.g. 1520.00" required class="w-full px-3 py-2 bg-lightBg dark:bg-darkBg border border-lightBorder dark:border-borderCol rounded-xl text-sm text-gray-800 dark:text-white focus:outline-none focus:border-accentBlue">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Setup Rating</label>
-                        <select id="tradeRating" class="w-full px-3 py-2 bg-darkBg border border-borderCol rounded-xl text-sm text-white focus:outline-none focus:border-accentBlue">
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Brokerage / Fees ($)</label>
+                        <input type="number" step="any" id="tradeFees" value="0" placeholder="e.g. 5.50" required class="w-full px-3 py-2 bg-lightBg dark:bg-darkBg border border-lightBorder dark:border-borderCol rounded-xl text-sm text-gray-800 dark:text-white focus:outline-none focus:border-accentBlue">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Strategy Name</label>
+                        <input type="text" id="tradeStrategy" placeholder="e.g. Breakout, VWAP, EMA Cross" required class="w-full px-3 py-2 bg-lightBg dark:bg-darkBg border border-lightBorder dark:border-borderCol rounded-xl text-sm text-gray-800 dark:text-white focus:outline-none focus:border-accentBlue">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Psychology / Emotion</label>
+                        <select id="tradeEmotion" class="w-full px-3 py-2 bg-lightBg dark:bg-darkBg border border-lightBorder dark:border-borderCol rounded-xl text-sm text-gray-800 dark:text-white focus:outline-none focus:border-accentBlue">
+                            <option value="Disciplined">Disciplined & Calm</option>
+                            <option value="Confident">Confident</option>
+                            <option value="FOMO">FOMO / Chased</option>
+                            <option value="Revenge">Revenge Trading</option>
+                            <option value="Anxious">Anxious / Impatient</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Setup Rating</label>
+                        <select id="tradeRating" class="w-full px-3 py-2 bg-lightBg dark:bg-darkBg border border-lightBorder dark:border-borderCol rounded-xl text-sm text-gray-800 dark:text-white focus:outline-none focus:border-accentBlue">
                             <option value="★★★★★">★★★★★ (A+ Setup)</option>
                             <option value="★★★★☆">★★★★☆ (Good)</option>
                             <option value="★★★☆☆">★★★☆☆ (Average)</option>
@@ -199,52 +273,55 @@
                             <option value="★☆☆☆☆">★☆☆☆☆ (Impulsive)</option>
                         </select>
                     </div>
-                    <div class="sm:col-span-2 lg:col-span-3">
-                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Emotions / Notes / Mistakes</label>
-                        <input type="text" id="tradeNotes" placeholder="e.g. Followed plan perfectly, exited early..." class="w-full px-3 py-2 bg-darkBg border border-borderCol rounded-xl text-sm text-white focus:outline-none focus:border-accentBlue">
-                    </div>
                     <div>
                         <button type="submit" class="w-full py-2.5 bg-accentBlue hover:bg-accentBlue/90 text-white rounded-xl text-sm font-semibold shadow-md shadow-accentBlue/25 transition-all">
                             <i class="fa-solid fa-plus mr-1"></i> Save Trade
                         </button>
                     </div>
+                    <div class="sm:col-span-2 lg:col-span-4">
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Notes / Lessons Learned / Mistakes</label>
+                        <input type="text" id="tradeNotes" placeholder="e.g. Followed stop-loss strictly, exited a bit early near resistance..." class="w-full px-3 py-2 bg-lightBg dark:bg-darkBg border border-lightBorder dark:border-borderCol rounded-xl text-sm text-gray-800 dark:text-white focus:outline-none focus:border-accentBlue">
+                    </div>
                 </form>
             </div>
 
             <!-- Trades Table Section -->
-            <div class="bg-cardBg border border-borderCol rounded-2xl shadow-lg overflow-hidden">
-                <div class="p-4 sm:p-6 border-b border-borderCol flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="bg-lightCard dark:bg-cardBg border border-lightBorder dark:border-borderCol rounded-2xl shadow-lg overflow-hidden">
+                <div class="p-4 sm:p-6 border-b border-lightBorder dark:border-borderCol flex flex-col sm:flex-row justify-between items-center gap-4">
                     <div class="flex items-center space-x-3 w-full sm:w-auto">
-                        <h2 class="text-base font-bold text-white flex items-center space-x-2 whitespace-nowrap">
+                        <h2 class="text-base font-bold text-gray-800 dark:text-white flex items-center space-x-2 whitespace-nowrap">
                             <i class="fa-solid fa-list text-accentBlue"></i>
-                            <span>Trade History</span>
+                            <span>Trade History Log</span>
                         </h2>
-                        <span id="tradeCountBadge" class="text-xs px-2.5 py-1 bg-darkBg border border-borderCol rounded-full text-gray-400 font-medium">0 Trades</span>
+                        <span id="tradeCountBadge" class="text-xs px-2.5 py-1 bg-lightBg dark:bg-darkBg border border-lightBorder dark:border-borderCol rounded-full text-gray-500 dark:text-gray-400 font-medium">0 Trades</span>
                     </div>
                     <!-- Search Filter -->
                     <div class="w-full sm:w-72 relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400"><i class="fa-solid fa-search text-xs"></i></span>
-                        <input type="text" id="searchInput" oninput="filterTrades()" placeholder="Search symbol or strategy..." class="w-full pl-9 pr-4 py-2 bg-darkBg border border-borderCol rounded-xl text-xs text-white focus:outline-none focus:border-accentBlue">
+                        <input type="text" id="searchInput" oninput="filterTrades()" placeholder="Search symbol, strategy..." class="w-full pl-9 pr-4 py-2 bg-lightBg dark:bg-darkBg border border-lightBorder dark:border-borderCol rounded-xl text-xs text-gray-800 dark:text-white focus:outline-none focus:border-accentBlue">
                     </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="border-b border-borderCol text-xs text-gray-400 uppercase bg-darkBg/50">
+                            <tr class="border-b border-lightBorder dark:border-borderCol text-xs text-gray-500 dark:text-gray-400 uppercase bg-lightBg/50 dark:bg-darkBg/50">
                                 <th class="py-3 px-4">Date</th>
                                 <th class="py-3 px-4">Symbol</th>
+                                <th class="py-3 px-4">Class</th>
                                 <th class="py-3 px-4">Type</th>
                                 <th class="py-3 px-4">Strategy</th>
                                 <th class="py-3 px-4 text-center">Qty</th>
-                                <th class="py-3 px-4 text-right">Buy</th>
-                                <th class="py-3 px-4 text-right">Sell</th>
+                                <th class="py-3 px-4 text-right">Entry</th>
+                                <th class="py-3 px-4 text-right">Exit</th>
+                                <th class="py-3 px-4 text-right">Fees</th>
+                                <th class="py-3 px-4 text-center">Emotion</th>
                                 <th class="py-3 px-4 text-center">Rating</th>
                                 <th class="py-3 px-4">Notes</th>
-                                <th class="py-3 px-4 text-right">P&L ($)</th>
+                                <th class="py-3 px-4 text-right">Net P&L ($)</th>
                                 <th class="py-3 px-4 text-center">Action</th>
                             </tr>
                         </thead>
-                        <tbody id="tradesTableBody" class="text-sm divide-y divide-borderCol/50">
+                        <tbody id="tradesTableBody" class="text-sm divide-y divide-lightBorder/50 dark:divide-borderCol/50">
                             <!-- Populated dynamically -->
                         </tbody>
                     </table>
@@ -252,15 +329,15 @@
             </div>
         </div>
 
-        <!-- TAB 3: PLAYBOOK & ANALYTICS -->
+        <!-- TAB 3: ANALYTICS & PLAYBOOK -->
         <div id="tab-playbook" class="tab-content space-y-6">
-            <div class="bg-cardBg border border-borderCol p-6 rounded-2xl shadow-lg">
-                <div class="flex items-center justify-between mb-6 pb-3 border-b border-borderCol">
-                    <h2 class="text-base font-bold text-white flex items-center space-x-2">
+            <div class="bg-lightCard dark:bg-cardBg border border-lightBorder dark:border-borderCol p-6 rounded-2xl shadow-lg">
+                <div class="flex items-center justify-between mb-6 pb-3 border-b border-lightBorder dark:border-borderCol">
+                    <h2 class="text-base font-bold text-gray-800 dark:text-white flex items-center space-x-2">
                         <i class="fa-solid fa-chess-board text-accentPurple"></i>
                         <span>Strategy Playbook Performance</span>
                     </h2>
-                    <span class="text-xs text-gray-400">Breakdown by Strategy</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">Detailed breakdown by strategy</span>
                 </div>
                 <div id="strategyAnalyticsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <!-- Populated dynamically -->
@@ -270,35 +347,136 @@
 
     </main>
 
+    <!-- Modal for Creating New Portfolio -->
+    <div id="newPortfolioModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-lightCard dark:bg-cardBg border border-lightBorder dark:border-borderCol p-6 rounded-2xl w-full max-w-md shadow-2xl space-y-4">
+            <div class="flex justify-between items-center pb-2 border-b border-lightBorder dark:border-borderCol">
+                <h3 class="font-bold text-base text-gray-800 dark:text-white">Create New Portfolio Account</h3>
+                <button onclick="closeNewPortfolioModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Portfolio Name</label>
+                <input type="text" id="newPortfolioName" placeholder="e.g. Options Scalping, Swing Account" class="w-full px-3 py-2 bg-lightBg dark:bg-darkBg border border-lightBorder dark:border-borderCol rounded-xl text-sm text-gray-800 dark:text-white focus:outline-none focus:border-accentBlue">
+            </div>
+            <div class="flex justify-end space-x-3 pt-2">
+                <button onclick="closeNewPortfolioModal()" class="px-4 py-2 bg-lightBorder dark:bg-borderCol text-gray-700 dark:text-gray-300 rounded-xl text-xs font-semibold">Cancel</button>
+                <button onclick="createNewPortfolio()" class="px-4 py-2 bg-accentBlue text-white rounded-xl text-xs font-semibold">Create Portfolio</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
     <script>
-        let trades = JSON.parse(localStorage.getItem('apex_tradejournal_entries')) || [];
+        // Portfolio & State Management
+        let portfolios = JSON.parse(localStorage.getItem('apex_portfolios')) || { "Main Portfolio": [] };
+        let activePortfolio = localStorage.getItem('apex_active_portfolio') || "Main Portfolio";
+
+        if (!portfolios[activePortfolio]) {
+            activePortfolio = Object.keys(portfolios)[0] || "Main Portfolio";
+        }
+
+        let trades = portfolios[activePortfolio] || [];
         let equityChartInstance = null;
         let winLossChartInstance = null;
 
         window.onload = function() {
-            // Set default datetime to now
+            // Initialize Theme preference
+            const savedTheme = localStorage.getItem('apex_theme') || 'dark';
+            if (savedTheme === 'light') {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('themeIcon').className = "fa-solid fa-sun text-sm";
+            } else {
+                document.documentElement.classList.add('dark');
+                document.getElementById('themeIcon').className = "fa-solid fa-moon text-sm";
+            }
+
+            // Default datetime to now
             const now = new Date();
             now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
             document.getElementById('tradeDate').value = now.toISOString().slice(0,16);
             
+            renderPortfolios();
             initCharts();
             renderApp();
         };
+
+        // Theme Toggle Function
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('apex_theme', isDark ? 'dark' : 'light');
+            document.getElementById('themeIcon').className = isDark ? "fa-solid fa-moon text-sm" : "fa-solid fa-sun text-sm";
+            updateCharts();
+        }
+
+        // Portfolio Functions
+        function renderPortfolios() {
+            const selectors = [document.getElementById('portfolioSelector'), document.getElementById('mobilePortfolioSelector')];
+            selectors.forEach(sel => {
+                if(!sel) return;
+                sel.innerHTML = '';
+                Object.keys(portfolios).forEach(portName => {
+                    const opt = document.createElement('option');
+                    opt.value = portName;
+                    opt.textContent = portName;
+                    if(portName === activePortfolio) opt.selected = true;
+                    sel.appendChild(opt);
+                });
+            });
+            const label = document.getElementById('activePortfolioLabel');
+            if(label) label.textContent = activePortfolio;
+        }
+
+        function switchPortfolio(portName) {
+            activePortfolio = portName;
+            localStorage.setItem('apex_active_portfolio', activePortfolio);
+            trades = portfolios[activePortfolio] || [];
+            renderPortfolios();
+            renderApp();
+        }
+
+        function openNewPortfolioModal() {
+            document.getElementById('newPortfolioName').value = '';
+            document.getElementById('newPortfolioModal').classList.remove('hidden');
+            document.getElementById('newPortfolioName').focus();
+        }
+
+        function closeNewPortfolioModal() {
+            document.getElementById('newPortfolioModal').classList.add('hidden');
+        }
+
+        function createNewPortfolio() {
+            const name = document.getElementById('newPortfolioName').value.trim();
+            if(!name) {
+                alert('Please enter a valid portfolio name.');
+                return;
+            }
+            if(portfolios[name]) {
+                alert('Portfolio with this name already exists.');
+                return;
+            }
+            portfolios[name] = [];
+            activePortfolio = name;
+            localStorage.setItem('apex_portfolios', JSON.stringify(portfolios));
+            localStorage.setItem('apex_active_portfolio', activePortfolio);
+            trades = portfolios[activePortfolio];
+            closeNewPortfolioModal();
+            renderPortfolios();
+            renderApp();
+        }
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
 
-            // Update desktop navigation active states
             ['dashboard', 'journal', 'playbook'].forEach(id => {
                 const btn = document.getElementById('nav-' + id);
                 const mobBtn = document.getElementById('mobile-nav-' + id);
                 if(id === tabId) {
-                    if(btn) { btn.className = "px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-accentBlue text-white shadow-sm"; }
-                    if(mobBtn) { mobBtn.className = "text-xs font-semibold text-accentBlue py-1"; }
+                    if(btn) btn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-accentBlue text-white shadow-sm";
+                    if(mobBtn) mobBtn.className = "text-xs font-semibold text-accentBlue py-1";
                 } else {
-                    if(btn) { btn.className = "px-4 py-2 rounded-lg text-xs font-semibold transition-all text-gray-400 hover:text-white"; }
-                    if(mobBtn) { mobBtn.className = "text-xs font-semibold text-gray-400 py-1"; }
+                    if(btn) btn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white";
+                    if(mobBtn) mobBtn.className = "text-xs font-semibold text-gray-600 dark:text-gray-400 py-1";
                 }
             });
 
@@ -307,39 +485,47 @@
             }
         }
 
+        // Form Submit
         function handleFormSubmit(e) {
             e.preventDefault();
             
             const date = document.getElementById('tradeDate').value;
             const symbol = document.getElementById('tradeSymbol').value.toUpperCase().trim();
+            const assetClass = document.getElementById('tradeAssetClass').value;
             const type = document.getElementById('tradeType').value;
-            const strategy = document.getElementById('tradeStrategy').value.trim();
             const qty = parseFloat(document.getElementById('tradeQty').value);
             const buyPrice = parseFloat(document.getElementById('tradeBuyPrice').value);
             const sellPrice = parseFloat(document.getElementById('tradeSellPrice').value);
+            const fees = parseFloat(document.getElementById('tradeFees').value) || 0;
+            const strategy = document.getElementById('tradeStrategy').value.trim();
+            const emotion = document.getElementById('tradeEmotion').value;
             const rating = document.getElementById('tradeRating').value;
             const notes = document.getElementById('tradeNotes').value.trim();
 
-            // Calculate P&L based on Buy/Sell and Long/Short
-            let pnl = 0;
-            if (type === 'BUY/LONG') {
-                pnl = (sellPrice - buyPrice) * qty;
+            // Calculate Net P&L (Gross P&L minus Fees)
+            let grossPnl = 0;
+            if (type === 'LONG') {
+                grossPnl = (sellPrice - buyPrice) * qty;
             } else {
-                pnl = (buyPrice - sellPrice) * qty;
+                grossPnl = (buyPrice - sellPrice) * qty;
             }
+            const netPnl = grossPnl - fees;
 
             const newTrade = {
                 id: 'tr-' + Date.now(),
                 date,
                 symbol,
+                assetClass,
                 type,
-                strategy,
                 qty,
                 buyPrice,
                 sellPrice,
+                fees,
+                strategy,
+                emotion,
                 rating,
                 notes,
-                pnl
+                pnl: netPnl
             };
 
             trades.unshift(newTrade);
@@ -347,10 +533,11 @@
 
             // Reset form fields except date
             document.getElementById('tradeSymbol').value = '';
-            document.getElementById('tradeStrategy').value = '';
             document.getElementById('tradeQty').value = '';
             document.getElementById('tradeBuyPrice').value = '';
             document.getElementById('tradeSellPrice').value = '';
+            document.getElementById('tradeFees').value = '0';
+            document.getElementById('tradeStrategy').value = '';
             document.getElementById('tradeNotes').value = '';
             document.getElementById('tradeSymbol').focus();
         }
@@ -362,9 +549,9 @@
             }
         }
 
-        function clearAllData() {
+        function clearPortfolioData() {
             if(trades.length === 0) return;
-            if(confirm('Are you sure you want to reset and delete all saved trades?')) {
+            if(confirm(`Are you sure you want to delete all trades in portfolio "${activePortfolio}"?`)) {
                 trades = [];
                 saveAndRefresh();
             }
@@ -372,17 +559,18 @@
 
         function loadSampleData() {
             const sampleTrades = [
-                { id: 'tr-1', date: '2026-06-01T10:30', symbol: 'RELIANCE', type: 'BUY/LONG', strategy: 'Breakout', qty: 100, buyPrice: 2450, sellPrice: 2520, rating: '★★★★★', notes: 'Clean volume breakout', pnl: 7000 },
-                { id: 'tr-2', date: '2026-06-02T11:15', symbol: 'NIFTY', type: 'SELL/SHORT', strategy: 'VWAP Rejection', qty: 50, buyPrice: 19600, sellPrice: 19520, rating: '★★★★☆', notes: 'Nice rejection at resistance', pnl: 4000 },
-                { id: 'tr-3', date: '2026-06-03T09:45', symbol: 'BTC', type: 'BUY/LONG', strategy: 'Support Bounce', qty: 0.5, buyPrice: 67000, sellPrice: 66200, rating: '★★★☆☆', notes: 'Failed to hold support, cut loss', pnl: -400 },
-                { id: 'tr-4', date: '2026-06-04T14:20', symbol: 'TCS', type: 'BUY/LONG', strategy: 'Trend Following', qty: 75, buyPrice: 3800, sellPrice: 3890, rating: '★★★★★', notes: 'Strong momentum day', pnl: 6750 }
+                { id: 'tr-1', date: '2026-06-01T10:30', symbol: 'NIFTY', assetClass: 'Options', type: 'LONG', qty: 75, buyPrice: 120, sellPrice: 155, fees: 15, strategy: 'Breakout', emotion: 'Disciplined', rating: '★★★★★', notes: 'Clean morning breakout', pnl: 2605 },
+                { id: 'tr-2', date: '2026-06-02T11:15', symbol: 'RELIANCE', assetClass: 'Equity', type: 'LONG', qty: 50, buyPrice: 2450, sellPrice: 2510, fees: 20, strategy: 'VWAP Bounce', emotion: 'Confident', rating: '★★★★☆', notes: 'Held above VWAP', pnl: 2980 },
+                { id: 'tr-3', date: '2026-06-03T09:45', symbol: 'BTC', assetClass: 'Crypto', type: 'SHORT', qty: 0.5, buyPrice: 68000, sellPrice: 67200, fees: 10, strategy: 'Resistance Rejection', emotion: 'FOMO', rating: '★★★☆☆', notes: 'Chased entry slightly', pnl: 390 },
+                { id: 'tr-4', date: '2026-06-04T14:20', symbol: 'AAPL', assetClass: 'Equity', type: 'LONG', qty: 30, buyPrice: 185, sellPrice: 182, fees: 5, strategy: 'Support Bounce', emotion: 'Anxious', rating: '★★☆☆☆', notes: 'Support broke, cut loss', pnl: -95 }
             ];
             trades = sampleTrades;
             saveAndRefresh();
         }
 
         function saveAndRefresh() {
-            localStorage.setItem('apex_tradejournal_entries', JSON.stringify(trades));
+            portfolios[activePortfolio] = trades;
+            localStorage.setItem('apex_portfolios', JSON.stringify(portfolios));
             renderApp();
         }
 
@@ -395,7 +583,7 @@
 
         function filterTrades() {
             const query = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = trades.filter(t => t.symbol.toLowerCase().includes(query) || t.strategy.toLowerCase().includes(query));
+            const filtered = trades.filter(t => t.symbol.toLowerCase().includes(query) || t.strategy.toLowerCase().includes(query) || t.assetClass.toLowerCase().includes(query));
             renderTable(filtered);
         }
 
@@ -406,27 +594,30 @@
             document.getElementById('tradeCountBadge').textContent = `${dataArray.length} Trade${dataArray.length === 1 ? '' : 's'}`;
 
             if(dataArray.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="11" class="py-8 text-center text-gray-500 text-sm">No trades found. Log a new trade above or load demo data.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="14" class="py-8 text-center text-gray-400 text-sm">No trades in this portfolio. Add a trade above or load demo data.</td></tr>`;
                 return;
             }
 
             dataArray.forEach(t => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-borderCol/30 transition-all";
+                tr.className = "hover:bg-lightBorder/30 dark:hover:bg-borderCol/30 transition-all";
                 const formattedDate = t.date.replace('T', ' ');
                 tr.innerHTML = `
-                    <td class="py-3 px-4 text-xs text-gray-400 whitespace-nowrap">${formattedDate}</td>
-                    <td class="py-3 px-4 font-bold text-white whitespace-nowrap">${t.symbol}</td>
-                    <td class="py-3 px-4 whitespace-nowrap"><span class="px-2 py-0.5 rounded text-xs font-semibold ${t.type.includes('BUY') ? 'bg-accentBlue/20 text-accentBlue' : 'bg-purple-500/20 text-purple-400'}">${t.type}</span></td>
-                    <td class="py-3 px-4 text-gray-300 text-xs whitespace-nowrap">${t.strategy}</td>
-                    <td class="py-3 px-4 text-center text-xs text-gray-300 whitespace-nowrap">${t.qty}</td>
-                    <td class="py-3 px-4 text-right text-xs text-gray-300 whitespace-nowrap">$${Number(t.buyPrice).toFixed(2)}</td>
-                    <td class="py-3 px-4 text-right text-xs text-gray-300 whitespace-nowrap">$${Number(t.sellPrice).toFixed(2)}</td>
+                    <td class="py-3 px-4 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">${formattedDate}</td>
+                    <td class="py-3 px-4 font-bold text-gray-800 dark:text-white whitespace-nowrap">${t.symbol}</td>
+                    <td class="py-3 px-4 text-xs text-gray-600 dark:text-gray-300 whitespace-nowrap"><span class="px-2 py-0.5 rounded bg-lightBorder/50 dark:bg-borderCol">${t.assetClass}</span></td>
+                    <td class="py-3 px-4 whitespace-nowrap"><span class="px-2 py-0.5 rounded text-xs font-semibold ${t.type === 'LONG' ? 'bg-accentBlue/20 text-accentBlue' : 'bg-purple-500/20 text-purple-400'}">${t.type}</span></td>
+                    <td class="py-3 px-4 text-gray-600 dark:text-gray-300 text-xs whitespace-nowrap">${t.strategy}</td>
+                    <td class="py-3 px-4 text-center text-xs text-gray-600 dark:text-gray-300 whitespace-nowrap">${t.qty}</td>
+                    <td class="py-3 px-4 text-right text-xs text-gray-600 dark:text-gray-300 whitespace-nowrap">$${Number(t.buyPrice).toFixed(2)}</td>
+                    <td class="py-3 px-4 text-right text-xs text-gray-600 dark:text-gray-300 whitespace-nowrap">$${Number(t.sellPrice).toFixed(2)}</td>
+                    <td class="py-3 px-4 text-right text-xs text-gray-400 whitespace-nowrap">$${Number(t.fees || 0).toFixed(2)}</td>
+                    <td class="py-3 px-4 text-center text-xs text-gray-400 whitespace-nowrap">${t.emotion || '-'}</td>
                     <td class="py-3 px-4 text-center text-xs text-yellow-400 whitespace-nowrap">${t.rating}</td>
-                    <td class="py-3 px-4 text-gray-400 text-xs max-w-xs truncate">${t.notes || '-'}</td>
+                    <td class="py-3 px-4 text-gray-500 dark:text-gray-400 text-xs max-w-xs truncate">${t.notes || '-'}</td>
                     <td class="py-3 px-4 text-right font-bold whitespace-nowrap ${t.pnl >= 0 ? 'text-neonGreen' : 'text-neonRed'}">${t.pnl >= 0 ? '+' : ''}$${Number(t.pnl).toFixed(2)}</td>
                     <td class="py-3 px-4 text-center whitespace-nowrap">
-                        <button onclick="deleteTrade('${t.id}')" class="text-gray-500 hover:text-neonRed p-1 transition-all" title="Delete Trade">
+                        <button onclick="deleteTrade('${t.id}')" class="text-gray-400 hover:text-neonRed p-1 transition-all" title="Delete Trade">
                             <i class="fa-solid fa-trash text-xs"></i>
                         </button>
                     </td>
@@ -466,11 +657,13 @@
             const total = trades.length;
             const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : '0.0';
             const profitFactor = grossLoss > 0 ? (grossWin / grossLoss).toFixed(2) : (grossWin > 0 ? 'Infinite' : '0.00');
+            const avgWin = wins > 0 ? (grossWin / wins) : 0;
+            const avgLoss = losses > 0 ? (grossLoss / losses) : 0;
 
             // Render Metrics
             const pnlEl = document.getElementById('metric-pnl');
             pnlEl.textContent = (totalPnl >= 0 ? '+' : '') + '$' + totalPnl.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            pnlEl.className = "text-xl sm:text-2xl font-bold tracking-tight mt-2 " + (totalPnl >= 0 ? 'text-neonGreen' : 'text-neonRed');
+            pnlEl.className = "text-lg sm:text-xl font-bold tracking-tight mt-2 " + (totalPnl >= 0 ? 'text-neonGreen' : 'text-neonRed');
 
             document.getElementById('metric-winrate').textContent = winRate + '%';
             document.getElementById('metric-pf').textContent = profitFactor;
@@ -481,6 +674,9 @@
             
             const worstEl = document.getElementById('metric-worst');
             worstEl.textContent = (worst >= 0 ? '+' : '') + '$' + worst.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+            document.getElementById('metric-avgwin').textContent = '+$' + avgWin.toFixed(2);
+            document.getElementById('metric-avgloss').textContent = '-$' + avgLoss.toFixed(2);
         }
 
         function renderStrategyAnalytics() {
@@ -500,7 +696,7 @@
 
             const strategies = Object.keys(stats);
             if(strategies.length === 0) {
-                container.innerHTML = `<div class="col-span-full py-8 text-center text-gray-500 text-sm">No strategy data available yet.</div>`;
+                container.innerHTML = `<div class="col-span-full py-8 text-center text-gray-400 text-sm">No strategy analytics available yet.</div>`;
                 return;
             }
 
@@ -508,19 +704,19 @@
                 const s = stats[strat];
                 const wr = ((s.wins / s.count) * 100).toFixed(1);
                 const card = document.createElement('div');
-                card.className = "bg-darkBg border border-borderCol p-5 rounded-xl space-y-3";
+                card.className = "bg-lightBg dark:bg-darkBg border border-lightBorder dark:border-borderCol p-5 rounded-xl space-y-3";
                 card.innerHTML = `
                     <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-white text-sm">${strat}</h3>
-                        <span class="text-xs px-2 py-0.5 rounded bg-borderCol text-gray-300">${s.count} Trades</span>
+                        <h3 class="font-bold text-gray-800 dark:text-white text-sm">${strat}</h3>
+                        <span class="text-xs px-2 py-0.5 rounded bg-lightBorder dark:bg-borderCol text-gray-600 dark:text-gray-300">${s.count} Trades</span>
                     </div>
                     <div class="flex justify-between items-center text-xs">
-                        <span class="text-gray-400">Strategy P&L:</span>
+                        <span class="text-gray-500 dark:text-gray-400">Strategy P&L:</span>
                         <span class="font-bold ${s.pnl >= 0 ? 'text-neonGreen' : 'text-neonRed'}">${s.pnl >= 0 ? '+' : ''}$${s.pnl.toFixed(2)}</span>
                     </div>
                     <div class="flex justify-between items-center text-xs">
-                        <span class="text-gray-400">Win Rate:</span>
-                        <span class="font-semibold text-white">${wr}%</span>
+                        <span class="text-gray-500 dark:text-gray-400">Win Rate:</span>
+                        <span class="font-semibold text-gray-800 dark:text-white">${wr}%</span>
                     </div>
                 `;
                 container.appendChild(card);
@@ -528,12 +724,24 @@
         }
 
         function initCharts() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const gridColor = isDark ? '#1e293b' : '#e2e8f0';
+            const textColor = isDark ? '#94a3b8' : '#64748b';
+
             // Equity Curve Chart
             const ctx1 = document.getElementById('equityChart').getContext('2d');
             equityChartInstance = new Chart(ctx1, {
                 type: 'line',
                 data: { labels: [], datasets: [{ label: 'Cumulative P&L', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 2, fill: true, tension: 0.2 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: '#1e293b' } }, y: { grid: { color: '#1e293b' } } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } }, 
+                    scales: { 
+                        x: { grid: { color: gridColor }, ticks: { color: textColor } }, 
+                        y: { grid: { color: gridColor }, ticks: { color: textColor } } 
+                    } 
+                }
             });
 
             // Win Loss Donut Chart
@@ -541,14 +749,25 @@
             winLossChartInstance = new Chart(ctx2, {
                 type: 'doughnut',
                 data: { labels: ['Wins', 'Losses'], datasets: [{ data: [0, 0], backgroundColor: ['#10b981', '#ef4444'], borderWidth: 0 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 12 } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: textColor, boxWidth: 12 } } } }
             });
         }
 
         function updateCharts() {
             if(!equityChartInstance || !winLossChartInstance) return;
 
-            // Sort trades chronologically for equity curve
+            const isDark = document.documentElement.classList.contains('dark');
+            const gridColor = isDark ? '#1e293b' : '#e2e8f0';
+            const textColor = isDark ? '#94a3b8' : '#64748b';
+
+            equityChartInstance.options.scales.x.grid.color = gridColor;
+            equityChartInstance.options.scales.x.ticks.color = textColor;
+            equityChartInstance.options.scales.y.grid.color = gridColor;
+            equityChartInstance.options.scales.y.ticks.color = textColor;
+
+            winLossChartInstance.options.plugins.legend.labels.color = textColor;
+
+            // Sort trades chronologically
             const sorted = [...trades].sort((a,b) => new Date(a.date) - new Date(b.date));
             let cumulative = 0;
             const labels = [];
@@ -564,7 +783,6 @@
             equityChartInstance.data.datasets[0].data = dataPoints;
             equityChartInstance.update();
 
-            // Win / Loss count
             let wins = trades.filter(t => t.pnl > 0).length;
             let losses = trades.filter(t => t.pnl <= 0).length;
             winLossChartInstance.data.datasets[0].data = [wins, losses];
@@ -573,19 +791,19 @@
 
         function exportCSV() {
             if(trades.length === 0) {
-                alert('No trades available to export.');
+                alert('No trades available in this portfolio to export.');
                 return;
             }
-            let csvContent = "data:text/csv;charset=utf-8,Date,Symbol,Type,Strategy,Quantity,BuyPrice,SellPrice,Rating,Notes,P&L\n";
+            let csvContent = "data:text/csv;charset=utf-8,Date,Symbol,AssetClass,Type,Quantity,EntryPrice,ExitPrice,Fees,Strategy,Emotion,Rating,Notes,NetPnL\n";
             trades.forEach(t => {
-                const row = [t.date, t.symbol, t.type, t.strategy, t.qty, t.buyPrice, t.sellPrice, t.rating, `"${(t.notes || '').replace(/"/g, '""')}"`, t.pnl];
+                const row = [t.date, t.symbol, t.assetClass, t.type, t.qty, t.buyPrice, t.sellPrice, t.fees, t.strategy, t.emotion, t.rating, `"${(t.notes || '').replace(/"/g, '""')}"`, t.pnl];
                 csvContent += row.join(",") + "\n";
             });
 
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `apex_trade_journal_${new Date().toISOString().slice(0,10)}.csv`);
+            link.setAttribute("download", `apex_journal_${activePortfolio.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.csv`);
             document.body.appendChild(link);
             link.click();
             link.remove();
